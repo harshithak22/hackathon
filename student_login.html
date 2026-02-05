@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Student Login</title>
+    <style>
+        body { font-family: Arial; background: #0a3d62; color: white;
+               display: flex; justify-content: center; align-items: center; height: 100vh;}
+        .box { background: white; color: black; padding: 30px; width: 350px; border-radius: 10px;}
+        input, button { width: 100%; padding: 10px; margin: 10px 0;}
+        button { background: #1e272e; color: white; border: none;}
+    </style>
+</head>
+
+<body>
+
+<div class="box">
+    <h2>Student Login</h2>
+    <input type="text" maxlength="20" placeholder="Username">
+    <input type="password" id="pwd">
+    <button onclick="login()">Login</button>
+</div>
+
+<script>
+function login(){
+    if(!/^[A-Za-z0-9_]{6,}$/.test(pwd.value)){
+        alert("Password format invalid");
+        return;
+    }
+    location.href="student_dashboard.html";
+}
+</script>
+
+</body>
+</html>

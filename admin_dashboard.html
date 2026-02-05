@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Admin Dashboard</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f4f6f8;
+}
+
+.marquee {
+    background: #0a3d62;
+    color: white;
+    padding: 10px;
+    font-size: 18px;
+}
+
+.container {
+    display: flex;
+    height: calc(100vh - 45px);
+}
+
+.sidebar {
+    width: 260px;
+    background: #1e272e;
+    color: white;
+    padding-top: 10px;
+}
+
+.menu-title {
+    padding: 10px 20px;
+    color: #feca57;
+    font-weight: bold;
+}
+
+.menu-item {
+    padding: 12px 20px;
+    cursor: pointer;
+    border-bottom: 1px solid #576574;
+}
+
+.menu-item:hover {
+    background: #485460;
+}
+
+.content {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px,1fr));
+    gap: 20px;
+}
+
+.card {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.card img {
+    width: 100%;
+    height: 140px;
+    object-fit: cover;
+    border-radius: 6px;
+}
+
+.btn {
+    margin-top: 10px;
+    padding: 8px 14px;
+    background: #0a3d62;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.plus-btn {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: #0a3d62;
+    color: white;
+    font-size: 30px;
+    border: none;
+    cursor: pointer;
+}
+
+.notice {
+    background: white;
+    padding: 15px;
+    margin: 10px 0;
+    border-left: 5px solid #0a3d62;
+    position: relative;
+}
+
+.edit { background:#1dd1a1; }
+.delete { background:#ee5253; }
+
+.form-box {
+    background: white;
+    padding: 15px;
+    margin-top: 15px;
+    border-radius: 6px;
+}
+
+input, textarea {
+    width: 100%;
+    padding: 8px;
+    margin: 6px 0;
+}
+</style>
+</head>
+
+<body>
+
+<div class="marquee">
+<marquee>🛠 Admin Dashboard | Upload Notices</marquee>
+</div>
+
+<div class="container">
+
+<!-- Sidebar -->
+<div class="sidebar">
+    <div class="menu-title">Notice Categories</div>
+    <div class="menu-item" onclick="loadMain('events')">Events</div>
+    <div class="menu-item" onclick="loadMain('exams')">Exams</div>
+    <div class="menu-item" onclick="loadMain('academic')">Academic</div>
+    <div class="menu-item" onclick="loadMain('placements')">Placements</div>
+    <div class="menu-item" onclick="loadMain('sports')">Sports</div>
+    <div class="menu-item" onclick="loadMain('faculty_meeting')">Faculty Meeting</div>
+    <div class="menu-item" onclick="loadMain('event_incharge')">Event Incharge</div>
+
+    <hr>
+    <div class="menu-title">Management</div>
+    <div class="menu-item">Student Data Management</div>
+    <div class="menu-item">Faculty Management</div>
+</div>
+
+<!-- Content -->
+<div class="content" id="content">
+    <h2>Welcome Admin</h2>
+    <p>Select a category</p>
+</div>
+
+</div>
+
+<script>
+const subCategories = {
+    events: ["Hackathon","Clubs","Seminars","Guest Lectures"],
+    exams: ["Internal","Semester","Revaluation"],
+    academic: ["Syllabus","Timetable","Results"],
+    placements: ["Drives","Internships","Training"],
+    sports: ["Tournaments","Selections"]
+};
+
+let currentKey = "";
+
+function loadMain(main) {
+    let html = `<h2>${main.toUpperCase()}</h2><div class="cards">`;
+
+    (subCategories[main] || []).forEach(sub => {
+        html += `
+        <div class="card">
+            <img src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d">
+            <h3>${sub}</h3>
+            <button class="btn" onclick="openSub('${main}','${sub}')">Add Notice</button>
+        </div>`;
+    });
+
+    html += "</div>";
+    document.getElementById("content").innerHTML = html;
+}
+
+function openSub(main, sub) {
+    currentKey = `${main}_${sub}`;
+    renderNoticePage();
+}
+
+function renderNoticePage() {
+    let notices = JSON.parse(localStorage.getItem(currentKey)) || [];
+
+    let html = `<h2>${currentKey.replace("_"," - ")}</h2>
+    <button class="plus-btn" onclick="openForm()">+</button>`;
+
+    notices.forEach((n,i)=>{
+        html+=`
+        <div class="notice">
+            <b>${n.text}</b><br>
+            📅 ${n.date} | 🚨 Urgent: ${n.urgent}
+            <div style="position:absolute;top:10px;right:10px">
+                <button class="btn edit" onclick="editNotice(${i})">Edit</button>
+                <button class="btn delete" onclick="deleteNotice(${i})">Delete</button>
+            </div>
+        </div>`;
+    });
+
+    document.getElementById("content").innerHTML = html;
+}
+
+function openForm(index=null) {
+    document.getElementById("content").innerHTML += `
+    <div class="form-box">
+        <textarea id="text" placeholder="Notice description"></textarea>
+        <input type="date" id="date">
+        <input type="file">
+        <label>Urgent?</label>
+        <input type="radio" name="urgent" value="Yes"> Yes
+        <input type="radio" name="urgent" value="No" checked> No
+        <br><br>
+        <button class="btn" onclick="upload()">Upload</button>
+    </div>`;
+}
+
+function upload() {
+    let text=document.getElementById("text").value;
+    let date=document.getElementById("date").value;
+    let urgent=document.querySelector('input[name="urgent"]:checked').value;
+
+    let arr=JSON.parse(localStorage.getItem(currentKey))||[];
+    arr.push({text,date,urgent});
+    localStorage.setItem(currentKey,JSON.stringify(arr));
+
+    if(urgent==="Yes"){
+        let u=JSON.parse(localStorage.getItem("urgent"))||[];
+        u.push({text,date});
+        localStorage.setItem("urgent",JSON.stringify(u));
+    }
+
+    renderNoticePage();
+}
+
+function deleteNotice(i){
+    let arr=JSON.parse(localStorage.getItem(currentKey));
+    arr.splice(i,1);
+    localStorage.setItem(currentKey,JSON.stringify(arr));
+    renderNoticePage();
+}
+
+function editNotice(i){
+    let arr=JSON.parse(localStorage.getItem(currentKey));
+    openForm();
+    document.getElementById("text").value=arr[i].text;
+    document.getElementById("date").value=arr[i].date;
+    arr.splice(i,1);
+    localStorage.setItem(currentKey,JSON.stringify(arr));
+}
+</script>
+
+</body>
+</html>
